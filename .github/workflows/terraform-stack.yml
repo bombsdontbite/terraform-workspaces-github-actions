@@ -40,7 +40,7 @@ jobs:
     name: ${{ inputs.input_stack }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.input_environment }}
-    concurrency: ${{ inputs.input_environment }}-${{ inputs.input_stack }}-infra-stack
+    concurrency: ${{ inputs.input_environment }}-${{ inputs.input_stack }}-terraform-stack
     defaults:
       run:
         shell: bash
