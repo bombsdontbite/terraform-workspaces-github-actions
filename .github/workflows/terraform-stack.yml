@@ -1,0 +1,77 @@
+name: terraform-stack
+
+on:
+  workflow_call:
+    inputs:
+      input_environment:
+        description: 'Input environment'
+        required: true 
+        type: string
+      input_stack:
+        description: 'Input the Terraform stack'
+        required: true 
+        type: string
+      input_mode:
+        description: 'Whether to deploy or destroy the infrastructure'
+        required: true 
+        type: string
+  workflow_dispatch:
+    inputs:
+      input_environment:
+        description: 'Input environment'
+        required: true 
+        type: string
+        default: dafault
+      input_stack:
+        description: 'Input the Terraform stack'
+        required: true 
+        type: string
+      input_mode:
+        description: 'Whether to deploy or destroy the infrastructure'
+        required: true 
+        type: choice
+        default: apply
+        options:
+        - apply
+        - destroy
+
+jobs:
+  terraform:
+    name: ${{ inputs.input_stack }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.input_environment }}
+    concurrency: ${{ inputs.input_environment }}-${{ inputs.input_stack }}-infra-stack
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./${{ inputs.input_stack }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v2
+    - name: Run TFSEC
+      uses: aquasecurity/tfsec-action@v1.0.2
+      with:
+        soft_fail: true
+    - name: Terraform Init
+      run: terraform init 
+    - name: Terraform Plan
+      run: |
+        terraform workspace select ${{ inputs.input_environment }} || terraform workspace new ${{ inputs.input_environment }}
+        terraform validate
+        if [[ "${{ inputs.input_mode }}" == "apply" ]]; then
+          terraform plan -var-file="../inputs/${{ inputs.input_environment }}.tfvars" -out "${{ inputs.input_environment }}.txt"
+        else
+          terraform plan -destroy -var-file="../inputs/${{ inputs.input_environment }}.tfvars" -out "${{ inputs.input_environment }}.txt"
+        fi
+    - name: Terraform Apply
+      run: |
+        terraform workspace select ${{ inputs.input_environment }} || terraform workspace new ${{ inputs.input_environment }}
+        terraform apply -input=false "${{ inputs.input_environment }}.txt"
