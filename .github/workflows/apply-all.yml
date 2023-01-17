@@ -1,0 +1,27 @@
+name: apply-all
+
+on:
+  workflow_dispatch:
+    inputs:
+      input_environment:
+        description: 'Input environment'
+        required: true 
+        type: string
+        default: default
+
+jobs:
+  network:
+    uses: bombsdontbite/multi-environment-infrastructure-provisioning/.github/workflows/terraform-stack.yml@main
+    with:
+      input_environment: ${{ inputs.input_environment }}
+      input_stack: terraform-stack-network
+      input_mode: apply
+    secrets: inherit
+  ec2:
+    uses: bombsdontbite/multi-environment-infrastructure-provisioning/.github/workflows/terraform-stack.yml@main
+    with:
+      input_environment: ${{ inputs.input_environment }}
+      input_stack: terraform-stack-ec2
+      input_mode: apply
+    secrets: inherit
+    needs: network

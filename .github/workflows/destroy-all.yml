@@ -1,0 +1,27 @@
+name: destroy-all
+
+on:
+  workflow_dispatch:
+    inputs:
+      input_environment:
+        description: 'Input environment'
+        required: true 
+        type: string
+        default: default
+
+jobs:
+  ec2:
+    uses: bombsdontbite/multi-environment-infrastructure-provisioning/.github/workflows/terraform-stack.yml@main
+    with:
+      input_environment: ${{ inputs.input_environment }}
+      input_stack: terraform-stack-ec2
+      input_mode: destroy
+    secrets: inherit
+  network:
+    uses: bombsdontbite/multi-environment-infrastructure-provisioning/.github/workflows/terraform-stack.yml@main
+    with:
+      input_environment: ${{ inputs.input_environment }}
+      input_stack: terraform-stack-network
+      input_mode: destroy
+    secrets: inherit
+    needs: ec2
