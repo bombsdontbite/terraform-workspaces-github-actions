@@ -1,2 +1,2 @@
-# Multi-environment infrastructure provisioning using Terraform &amp; GitHub Actions
+# Multi-environment infrastructure provisioning using Terraform Workspaces &amp; GitHub Actions
 
