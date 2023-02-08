@@ -44,7 +44,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ./${{ inputs.input_stack }}
+        working-directory: ./main/${{ inputs.input_stack }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -67,9 +67,9 @@ jobs:
         terraform workspace select ${{ inputs.input_environment }} || terraform workspace new ${{ inputs.input_environment }}
         terraform validate
         if [[ "${{ inputs.input_mode }}" == "apply" ]]; then
-          terraform plan -var-file="../terraform-inputs/${{ inputs.input_environment }}.tfvars" -out "${{ inputs.input_environment }}.txt"
+          terraform plan -var-file="../../inputs/${{ inputs.input_environment }}.tfvars" -out "${{ inputs.input_environment }}.txt"
         else
-          terraform plan -destroy -var-file="../terraform-inputs/${{ inputs.input_environment }}.tfvars" -out "${{ inputs.input_environment }}.txt"
+          terraform plan -destroy -var-file="../../inputs/${{ inputs.input_environment }}.tfvars" -out "${{ inputs.input_environment }}.txt"
         fi
     - name: Terraform Apply
       run: |
