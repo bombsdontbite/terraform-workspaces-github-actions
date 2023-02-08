@@ -14,14 +14,14 @@ jobs:
     uses: bombsdontbite/multi-environment-infrastructure-provisioning/.github/workflows/terraform-stack.yml@main
     with:
       input_environment: ${{ inputs.input_environment }}
-      input_stack: terraform-stack-network
+      input_stack: vpc
       input_mode: apply
     secrets: inherit
   ec2:
     uses: bombsdontbite/multi-environment-infrastructure-provisioning/.github/workflows/terraform-stack.yml@main
     with:
       input_environment: ${{ inputs.input_environment }}
-      input_stack: terraform-stack-ec2
+      input_stack: ec2
       input_mode: apply
     secrets: inherit
     needs: network
