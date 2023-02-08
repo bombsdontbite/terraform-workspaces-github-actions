@@ -6,8 +6,11 @@ on:
       input_environment:
         description: 'Input environment'
         required: true 
-        type: string
-        default: default
+        type: choice
+        options:
+        - dev
+        - stag
+        - prod
 
 jobs:
   network:
