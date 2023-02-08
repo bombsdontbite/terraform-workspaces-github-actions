@@ -20,12 +20,18 @@ on:
       input_environment:
         description: 'Input environment'
         required: true 
-        type: string
-        default: dafault
+        type: choice
+        options:
+        - dev
+        - stag
+        - prod
       input_stack:
         description: 'Input the Terraform stack'
         required: true 
-        type: string
+        type: choice
+        options:
+        - vpc
+        - ec2
       input_mode:
         description: 'Whether to deploy or destroy the infrastructure'
         required: true 
