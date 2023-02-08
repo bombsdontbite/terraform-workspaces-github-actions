@@ -27,4 +27,4 @@ jobs:
       input_stack: ec2
       input_mode: apply
     secrets: inherit
-    needs: network
+    needs: vpc
