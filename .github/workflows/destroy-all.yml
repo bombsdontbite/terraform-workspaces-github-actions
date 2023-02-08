@@ -20,7 +20,7 @@ jobs:
       input_stack: ec2
       input_mode: destroy
     secrets: inherit
-  network:
+  vpc:
     uses: bombsdontbite/multi-environment-infrastructure-provisioning/.github/workflows/terraform-stack.yml@main
     with:
       input_environment: ${{ inputs.input_environment }}
