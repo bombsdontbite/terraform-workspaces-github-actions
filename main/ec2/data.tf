@@ -1,6 +1,6 @@
 # DATA
 
-data "terraform_remote_state" "aws_network" {
+data "terraform_remote_state" "vpc" {
   backend   = "s3"
   workspace = terraform.workspace
   config = {
