@@ -129,7 +129,7 @@ variable "vpc_flow_log_destination_type" {
 }
 
 variable "vpc_flow_log_destination_arn" {
-  description = "The ARN of the CloudWatch log group or S3 bucket where VPC Flow Logs will be pushed. If this ARN is a S3 bucket the appropriate permissions need to be set on that bucket's policy. When create_flow_log_cloudwatch_log_group is set to false this argument must be provided."
+  description = "The ARN of S3 bucket where VPC Flow Logs will be pushed. If this ARN is a S3 bucket the appropriate permissions need to be set on that bucket's policy."
   type        = string
   default     = ""
 }
