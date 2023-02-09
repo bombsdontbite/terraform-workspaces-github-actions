@@ -22,7 +22,7 @@
 
 | Secret name | Desctiption | Required |
 |------|------|------|
-| SECRET_PHRASE | The secret phrase used to demonstrate the environment's secrets. | yes |
+| SECRET_PHRASE | Secret phrase to demonstrate the usage of environment secrets . | yes |
 
 ## Inputs
 
