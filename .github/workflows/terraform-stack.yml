@@ -72,6 +72,8 @@ jobs:
     - name: Terraform Init
       run: terraform init 
     - name: Terraform Plan
+      env:
+        TF_VAR_secret_phrase: ${{ secrets.SECRET_PHRASE }}
       run: |
         terraform workspace select ${{ inputs.input_environment }} || terraform workspace new ${{ inputs.input_environment }}
         terraform validate
