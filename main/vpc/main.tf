@@ -24,11 +24,11 @@ module "vpc" {
   map_public_ip_on_launch            = var.vpc_map_public_ip_on_launch
   enable_dns_support                 = var.vpc_enable_dns_support
   enable_dns_hostnames               = var.vpc_enable_dns_hostnames
+  propagate_public_route_tables_vgw  = var.vpc_propagate_public_route_tables_vgw
+  propagate_private_route_tables_vgw = var.vpc_propagate_private_route_tables_vgw
   enable_flow_log                    = var.vpc_enable_flow_log
   flow_log_destination_type          = var.vpc_flow_log_destination_type
   flow_log_destination_arn           = var.vpc_enable_flow_log && var.vpc_flow_log_destination_type == "s3" && var.vpc_flow_log_destination_arn == null ? module.s3_flow_log_bucket[0].s3_bucket_arn : var.vpc_flow_log_destination_arn
-  propagate_public_route_tables_vgw  = var.vpc["propagate_public_route_tables_vgw"]
-  propagate_private_route_tables_vgw = var.vpc["propagate_private_route_tables_vgw"]
   tags                               = local.tags
 }
   
