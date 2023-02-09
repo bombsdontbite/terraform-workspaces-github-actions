@@ -58,3 +58,6 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 | vpc_map_public_ip_on_launch | Should be false if you do not want to auto-assign public IP on launch. | `bool` | `false` | no |
 
 ### EC2 stack variables
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|----------|
