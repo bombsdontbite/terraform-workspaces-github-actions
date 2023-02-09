@@ -2,7 +2,7 @@
 
 ## Description
 
-This project demonstrates the potential of reusable workflows using GitHub Actions to provision multi-environment AWS infrastructure. You can read more about this project in my article on Medium.
+This project demonstrates the potential of reusable workflows using GitHub Actions to provision multi-environment AWS infrastructure. You can read more about this project in [my article on Medium](http://example.com/).
 
 > **Please note!**  I'm not focusing on infrastructure security in terms of AWS best practices and recommendations, this project is just a demonstration of GitHub Actions features. 
 
