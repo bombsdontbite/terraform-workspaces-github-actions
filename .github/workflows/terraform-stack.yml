@@ -40,6 +40,7 @@ on:
         options:
         - apply
         - destroy
+        - plan
 
 jobs:
   terraform:
@@ -72,12 +73,13 @@ jobs:
       run: |
         terraform workspace select ${{ inputs.input_environment }} || terraform workspace new ${{ inputs.input_environment }}
         terraform validate
-        if [[ "${{ inputs.input_mode }}" == "apply" ]]; then
-          terraform plan -var-file="../../inputs/${{ inputs.input_environment }}.tfvars" -out "${{ inputs.input_environment }}.txt"
-        else
+        if [[ "${{ inputs.input_mode }}" == "destroy" ]]; then
           terraform plan -destroy -var-file="../../inputs/${{ inputs.input_environment }}.tfvars" -out "${{ inputs.input_environment }}.txt"
+        else
+          terraform plan -var-file="../../inputs/${{ inputs.input_environment }}.tfvars" -out "${{ inputs.input_environment }}.txt"
         fi
     - name: Terraform Apply
+      if: inputs.input_mode != 'plan'
       run: |
         terraform workspace select ${{ inputs.input_environment }} || terraform workspace new ${{ inputs.input_environment }}
         terraform apply -input=false "${{ inputs.input_environment }}.txt"
