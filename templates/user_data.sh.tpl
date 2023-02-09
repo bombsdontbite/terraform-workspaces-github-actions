@@ -11,5 +11,5 @@ Instance IP address: ${INSTANCE_IP}<br>
 </html>
 EOF
 
-sudo service httpd start
+service httpd start
 chkconfig httpd on
