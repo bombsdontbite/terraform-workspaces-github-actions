@@ -1,5 +1,9 @@
 # Multi-environment infrastructure provisioning using Terraform Workspaces &amp; GitHub Actions
 
+## Description
+
+-----
+
 ## Environments
 
 | Name | Desctiption | 
@@ -7,6 +11,8 @@
 | dev | Development environment. |
 | stag | Staging environment. |
 | prod | Production environment. |
+
+-----
 
 ## Secrets
 
@@ -23,6 +29,8 @@
 | Secret name | Desctiption | Required |
 |------|------|------|
 | SECRET_PHRASE | Secret phrase to demonstrate the usage of environment secrets . | yes |
+
+-----
 
 ## Inputs
 
