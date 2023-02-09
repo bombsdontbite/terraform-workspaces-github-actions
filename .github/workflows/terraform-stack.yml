@@ -38,11 +38,11 @@ on:
         description: 'Whether to deploy or destroy the infrastructure'
         required: true 
         type: choice
-        default: apply
+        default: plan
         options:
+        - plan
         - apply
         - destroy
-        - plan
 
 jobs:
   terraform:
