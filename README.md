@@ -9,7 +9,7 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 ## Environments
 
 | Name | Desctiption | 
-|------|------|
+|------|-------------|
 | dev | Development environment. |
 | stag | Staging environment. |
 | prod | Production environment. |
@@ -21,7 +21,7 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 ### Repository secrets
 
 | Secret name | Desctiption | Required |
-|------|------|------|
+|-------------|-------------|----------|
 | AWS_ACCESS_KEY_ID | Specifies an AWS access key associated with an IAM user. | yes |
 | AWS_SECRET_ACCESS_KEY | Specifies the secret key associated with the access key. This is essentially the "password" for the access key. | yes |
 | AWS_DEFAULT_REGION | Specifies the AWS Region to send the request to. | yes |
@@ -29,7 +29,7 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 ### Environment secrets
 
 | Secret name | Desctiption | Required |
-|------|------|------|
+|-------------|-------------|----------|
 | SECRET_PHRASE | Secret phrase to demonstrate the usage of environment secrets . | yes |
 
 -----
@@ -37,6 +37,14 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 ## Inputs
 
 ### Common variables
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|----------|
+| target_account | Target AWS account ID. | `string` | `null` | yes |
+| target_region | Target AWS region name. | `string` | `null` | yes |
+| target_role | Target AWS IAM role name to be assumed. | `string` | `null` | yes |
+| project | Project name. | `string` | `null` | yes |
+| tags | A map of tags to assign to the resources. | `map(string)` | `{}` | no |
 
 ### VPC stack variables
 
