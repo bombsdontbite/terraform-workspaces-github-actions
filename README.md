@@ -51,7 +51,7 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 ### VPC stack variables
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:----------:|
+|------|:-------------:|------|---------|:----------:|
 | vpc_cidr | The IPv4 CIDR block for the VPC. | `string` | `null` | yes |
 | vpc_azs | A list of availability zones names or IDs in the target region. | `list(string)` | `[]` | no |
 | vpc_public_subnets | A list of public subnets CIDR bloks inside the VPC. | `list(string)` | `[]` | no |
