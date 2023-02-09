@@ -38,7 +38,7 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 
 ## Inputs
 
-### Common variables
+### Common inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
@@ -48,7 +48,7 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 | project | Project name. | `string` | `null` | yes |
 | tags | A map of tags to assign to the resources. | `map(string)` | `{}` | no |
 
-### VPC stack variables
+### VPC stack inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
@@ -73,7 +73,36 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 | vpc_flow_log_traffic_type | The type of traffic to capture. Valid values: ACCEPT, REJECT, ALL. | `string` | `"ALL"` | no |
 | flow_log_max_aggregation_interval | The maximum interval of time during which a flow of packets is captured and aggregated into a flow log record. Valid Values: `60` seconds or `600` seconds. | `number` | `600` | no |
 
-### EC2 stack variables
+### EC2 stack inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
+
+-----
+
+## Outputs
+
+### VPC stack outputs
+
+| Name | Description |
+|------|-------------|
+| vpc_id | The ID of the VPC. |
+| vpc_cidr_block | The CIDR block of the VPC. |
+| private_subnets | List of IDs of private subnets. |
+| private_subnets_cidr | List of CIDR blocks of private subnets. |
+| public_subnets | List of IDs of public subnets. |
+| public_subnets_cidr | List of CIDR blocks of public subnets. |
+| database_subnets | List of IDs of database subnets. |
+| database_subnets_cidr | List of CIDR blocks of database subnets. |
+| database_subnet_group | ID of database subnet group. |
+| natgw_ids | List of NAT Gateway IDs. |
+| nat_public_ips | List of public Elastic IPs created for AWS NAT Gateway. |
+| igw_id | The ID of the Internet Gateway. |
+| s3_flow_log_bucket_name | The name of the flow-log bucket. |
+| s3_flow_log_bucket_arn | The ARN of the bucket. Will be of format arn:aws:s3:::bucketname. |
+| http_security_group_id | HTTP security group ID. |
+
+### EC2 stack outputs
+
+| Name | Description |
+|------|-------------|
