@@ -1,5 +1,7 @@
 name: terraform-stack
 
+run-name: ${{ inputs.input_stack }} on ${{ inputs.input_environment }}
+
 on:
   workflow_call:
     inputs:
