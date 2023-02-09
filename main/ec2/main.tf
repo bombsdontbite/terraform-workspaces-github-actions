@@ -11,6 +11,7 @@ module "alb" {
   providers = {
     aws = aws.target
   }
+  name = "${terraform.workspace}-${var.project}-lb"
   # tbd
 }
 
