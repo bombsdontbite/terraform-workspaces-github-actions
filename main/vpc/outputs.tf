@@ -54,6 +54,11 @@ output "nat_public_ips" {
   description = "List of public Elastic IPs created for AWS NAT Gateway."
   value       = module.vpc.nat_public_ips
 }
+  
+output "igw_id" {
+  description = "The ID of the Internet Gateway."
+  value       = module.vpc.igw_id
+}
 
 output "s3_flow_log_bucket_name" {
   description = "The name of the flow-log bucket."
