@@ -12,7 +12,7 @@ module "alb" {
     aws = aws.target
   }
   name   = "${terraform.workspace}-${var.project}-lb"
-  vpc_id = 
+  vpc_id = data.terraform_remote_state.vpc.outputs.vpc_id
   # tbd
 }
 
