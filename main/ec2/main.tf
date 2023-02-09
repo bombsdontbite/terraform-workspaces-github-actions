@@ -11,7 +11,8 @@ module "alb" {
   providers = {
     aws = aws.target
   }
-  name = "${terraform.workspace}-${var.project}-lb"
+  name   = "${terraform.workspace}-${var.project}-lb"
+  vpc_id = 
   # tbd
 }
 
