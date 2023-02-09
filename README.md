@@ -2,6 +2,8 @@
 
 ## Description
 
+This project demonstrates the potential of reusable workflows using GitHub Actions to provision multi-environment AWS infrastructure.
+
 -----
 
 ## Environments
