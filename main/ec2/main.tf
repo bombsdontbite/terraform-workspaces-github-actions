@@ -1,7 +1,7 @@
 # LOCALS
 
 locals {
-  tags = merge(var.tags, { "Environment" = terraform.workspace })
+  tags = merge(var.tags, { "Project" = var.project, "Environment" = terraform.workspace })
 }
 
 # MODULES & RESOURCES
