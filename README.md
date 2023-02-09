@@ -4,6 +4,8 @@
 
 This project demonstrates the potential of reusable workflows using GitHub Actions to provision multi-environment AWS infrastructure. You can read more about this project in my article on Medium.
 
+> **Note!**  I'm not focusing on infrastructure security in terms of AWS best practices and recommendations, this project is just a demonstration of GitHub Actions features. 
+
 -----
 
 ## Environments
@@ -53,5 +55,6 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 | vpc_cidr | The IPv4 CIDR block for the VPC. | `string` | `null` | yes |
 | vpc_azs | A list of availability zones names or IDs in the target region. | `list(string)` | `[]` | no |
 | vpc_public_subnets | A list of public subnets CIDR bloks inside the VPC. | `list(string)` | `null` | yes |
+| vpc_map_public_ip_on_launch | Should be false if you do not want to auto-assign public IP on launch. | `bool` | `false` | no |
 
 ### EC2 stack variables
