@@ -25,9 +25,29 @@ variable "project" {
 }
 
 variable "tags" {
-  description = "A map of tags to be assigned to the resources."
+  description = "A map of tags to assign to the resources."
   type        = map(string)
   default     = {}
 }
 
 # STACK VARIABLES
+
+variable "vpc_cidr" {
+  description = "The IPv4 CIDR block for the VPC."
+  type        = string
+  default     = null
+}
+
+variable "vpc_azs" {
+  description = "A list of availability zones names or IDs in the target region."
+  type        = list(string)
+  default     = []
+}
+
+variable "vpc_public_subnets" {
+  description = "A list of public subnets CIDR bloks inside the VPC."
+  type        = list(string)
+  default     = []
+}
+
+
