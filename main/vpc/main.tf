@@ -17,3 +17,15 @@ module "vpc" {
   public_subnets = var.vpc_public_subnets
   tags           = local.tags
 }
+  
+module "http_security_group" {
+  source = "github.com/terraform-aws-modules/terraform-aws-security-group/modules/http-80"
+  providers = {
+    aws = aws.target
+  }
+  name                = "${terraform.workspace}-${var.project}-http"
+  description         = "Security group with HTTP ports open for everybody (IPv4 CIDR), egress ports are all world open."
+  vpc_id              = module.vpc.vpc_id
+  ingress_cidr_blocks = ["0.0.0.0/0"]
+  tags                = local.tags
+}
