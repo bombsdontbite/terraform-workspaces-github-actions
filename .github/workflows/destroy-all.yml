@@ -2,7 +2,6 @@ name: destroy-all
 
 run-name: destroy-all on ${{ inputs.input_environment }}
 
-
 on:
   workflow_dispatch:
     inputs:
