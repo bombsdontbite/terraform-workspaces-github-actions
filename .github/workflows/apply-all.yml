@@ -1,5 +1,7 @@
 name: apply-all
 
+run-name: apply-all on ${{ inputs.input_environment }}
+
 on:
   workflow_dispatch:
     inputs:
