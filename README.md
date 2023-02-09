@@ -32,7 +32,7 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 
 | Secret name | Desctiption | Required |
 |-------------|-------------|----------|
-| SECRET_PHRASE | Secret phrase to demonstrate the usage of environment secrets . | yes |
+| SECRET_PHRASE | Secret phrase to demonstrate the usage of environment secrets. | yes |
 
 -----
 
