@@ -13,7 +13,7 @@ module "vpc" {
   }
   name                               = "${terraform.workspace}-${var.project}-vpc"
   cidr                               = var.vpc_cidr
-  azs                                = length(var.vpc_azs) > 0 ? var.vpc_azs : slice(data.aws_availability_zones.target.names, 0, 3)
+  azs                                = length(var.vpc_azs) > 0 ? var.vpc_azs : slice(data.aws_availability_zones.target.names, 0, max(length(var.vpc_public_subnets), length(var.vpc_private_subnets), length(var.vpc_database_subnets)))
   public_subnets                     = var.vpc_public_subnets
   private_subnets                    = var.vpc_private_subnets
   database_subnets                   = var.vpc_database_subnets
