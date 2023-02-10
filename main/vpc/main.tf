@@ -41,6 +41,7 @@ module "http_security_group" {
     aws = aws.target
   }
   name                = "${terraform.workspace}-${var.project}-http"
+  use_name_prefix     = false
   description         = "Security group with HTTP ports open for everybody (IPv4 CIDR), egress ports are all world open."
   vpc_id              = module.vpc.vpc_id
   ingress_cidr_blocks = ["0.0.0.0/0"]
