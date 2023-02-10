@@ -9,3 +9,13 @@ data "terraform_remote_state" "vpc" {
     region = "eu-north-1"
   }
 }
+
+data "aws_ami" "amazon_linux" {
+  provider    = aws.target
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm*"]
+  }
+}
