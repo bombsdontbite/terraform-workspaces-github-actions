@@ -73,7 +73,9 @@ jobs:
       run: terraform init 
     - name: Terraform Plan
       env:
-        TF_VAR_secret_phrase: ${{ secrets.SECRET_PHRASE }}
+        TF_VAR_target_account: ${{ secrets.TARGET_ACCOUNT }}
+        TF_VAR_target_region: ${{ secrets.TARGET_REGION }}
+        TF_VAR_target_role: ${{ secrets.TARGET_ROLE }}
       run: |
         terraform workspace select ${{ inputs.input_environment }} || terraform workspace new ${{ inputs.input_environment }}
         terraform validate
