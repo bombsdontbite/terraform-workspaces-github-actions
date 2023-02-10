@@ -74,3 +74,8 @@ output "http_security_group_id" {
   description = "HTTP security group ID."
   value       = module.http_security_group.security_group_id
 }
+  
+output "autoscaling_security_group_id" {
+  description = "HTTP security group ID."
+  value       = module.autoscaling_security_group.security_group_id
+}
