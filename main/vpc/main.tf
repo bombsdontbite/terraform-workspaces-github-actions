@@ -42,10 +42,28 @@ module "http_security_group" {
   }
   name                = "${terraform.workspace}-${var.project}-http"
   use_name_prefix     = false
-  description         = "Security group with HTTP ports open for everybody (IPv4 CIDR), egress ports are all world open."
   vpc_id              = module.vpc.vpc_id
   ingress_cidr_blocks = ["0.0.0.0/0"]
   tags                = local.tags
+}
+  
+module "autoscaling_security_group" {
+  source  = "github.com/terraform-aws-modules/terraform-aws-security-group/"
+  providers = {
+    aws = aws.target
+  }
+  name            = "${terraform.workspace}-${var.project}-autoscaling"
+  use_name_prefix = false
+  vpc_id          = module.vpc.vpc_id
+  computed_ingress_with_source_security_group_id = [
+    {
+      rule                     = "http-80-tcp"
+      source_security_group_id = module.http_security_group.security_group_id
+    }
+  ]
+  number_of_computed_ingress_with_source_security_group_id = 1
+  egress_rules                                             = ["all-all"]
+  tags                                                     = local.tags
 }
 
 # If VPC flow logs are enabled and the destination type is `s3`
