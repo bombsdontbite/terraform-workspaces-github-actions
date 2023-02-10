@@ -42,9 +42,9 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
-| target_account | Target AWS account ID. | `string` | `null` | yes |
-| target_region | Target AWS region name. | `string` | `null` | yes |
-| target_role | Target AWS IAM role name to be assumed. | `string` | `null` | yes |
+| target_account | Target AWS account ID. | `string` | `null` | yes (auto-filled) |
+| target_region | Target AWS region name. | `string` | `null` | yes (auto-filled) |
+| target_role | Target AWS IAM role name to be assumed. | `string` | `null` | yes (auto-filled) |
 | project | Project name. | `string` | `null` | yes |
 | tags | A map of tags to assign to the resources. | `map(string)` | `{}` | no |
 
