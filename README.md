@@ -112,3 +112,4 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 
 | Name | Description |
 |------|-------------|
+| alb_dns_name | The DNS name of the load balancer. |
