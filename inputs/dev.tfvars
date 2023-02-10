@@ -1,8 +1,5 @@
 # COMMON VARIABLES
 
-target_account = "757382187207"
-target_region  = "eu-north-1"
-target_role    = "MyTerraformRole"
 project        = "awesome-project"
 
 tags = {
