@@ -68,6 +68,7 @@ jobs:
     - name: Run TFSEC
       uses: aquasecurity/tfsec-action@v1.0.2
       with:
+        working_directory: ./main/${{ inputs.input_stack }}
         soft_fail: true
     - name: Terraform Init
       run: terraform init 
