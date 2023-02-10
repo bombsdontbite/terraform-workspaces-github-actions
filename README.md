@@ -77,6 +77,12 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
+| alb_load_balancer_type | The type of load balancer to create. Possible values are application or network. **Please note: Only application loadbalancer type can be used within this project!** | `string` | `"application"` | no |
+| alb_internal | Boolean determining if the load balancer is internal or externally facing. | `bool` | `false` | no |
+| alb_idle_timeout | The time in seconds that the connection is allowed to be idle. | `number` | `60` | no |
+| alb_load_balancer_create_timeout | Timeout value when creating the ALB. | `string` | `"10m"` | no |
+| alb_load_balancer_update_timeout | Timeout value when updating the ALB. | `string` | `"10m"` | no |
+| alb_load_balancer_delete_timeout | Timeout value when deleting the ALB. | `string` | `"10m"` | no |
 
 -----
 
