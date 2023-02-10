@@ -52,7 +52,7 @@ module "http_security_group" {
 # an S3 bucket will be created automatically and set as the flow log bucket for the VPC.
   
 module "s3_flow_log_bucket" {
-  count  = var.enable_flow_log && var.flow_log_destination_type == "s3" && var.flow_log_destination_arn == null ? 1 : 0 
+  count  = var.vpc_enable_flow_log && var.vpc_flow_log_destination_type == "s3" && var.vpc_flow_log_destination_arn == null ? 1 : 0 
   source = "github.com/terraform-aws-modules/terraform-aws-s3-bucket"
   providers = {
     aws = aws.target
