@@ -47,12 +47,6 @@ variable "alb_internal" {
   default     = false
 }
 
-variable "alb_enable_cross_zone_load_balancing" {
-  description = "Indicates whether cross zone load balancing should be enabled in application load balancers."
-  type        = bool
-  default     = false
-}
-
 variable "alb_idle_timeout" {
   description = "The time in seconds that the connection is allowed to be idle."
   type        = number
