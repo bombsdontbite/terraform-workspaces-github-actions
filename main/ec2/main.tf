@@ -12,7 +12,7 @@ module "alb" {
     aws = aws.target
   }
   name               = "${terraform.workspace}-${var.project}-lb"
-  load_balancer_type = var.alb_load_balancer_type
+  load_balancer_type = var.alb_load_balancer_type # Only application loadbalancer type can be used within this project.
   internal           = var.alb_internal
   vpc_id             = data.terraform_remote_state.vpc.outputs.vpc_id
   subnets            = data.terraform_remote_state.vpc.outputs.public_subnets
@@ -40,10 +40,10 @@ module "alb" {
   tags                             = local.tags
 }
 
-module "autoscaling" {
-  source = "github.com/terraform-aws-modules/terraform-aws-autoscaling"
-  providers = {
-    aws = aws.target
-  }
-  # tbd
-}
+# module "autoscaling" {
+#   source = "github.com/terraform-aws-modules/terraform-aws-autoscaling"
+#   providers = {
+#     aws = aws.target
+#   }
+#   # tbd
+# }
