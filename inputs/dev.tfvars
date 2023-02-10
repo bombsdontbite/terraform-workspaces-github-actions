@@ -1,6 +1,6 @@
 # COMMON VARIABLES
 
-project        = "awesome-project"
+project = "awesome-project"
 
 tags = {
   "Provisioner" = "Terraform"
