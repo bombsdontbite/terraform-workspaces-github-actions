@@ -32,12 +32,11 @@ module "alb" {
       target_type      = "instance"
     }
   ]
-  enable_cross_zone_load_balancing = var.alb_enable_cross_zone_load_balancing
-  idle_timeout                     = var.alb_idle_timeout
-  load_balancer_create_timeout     = var.alb_load_balancer_create_timeout
-  load_balancer_update_timeout     = var.alb_load_balancer_update_timeout
-  load_balancer_delete_timeout     = var.alb_load_balancer_delete_timeout
-  tags                             = local.tags
+  idle_timeout                 = var.alb_idle_timeout
+  load_balancer_create_timeout = var.alb_load_balancer_create_timeout
+  load_balancer_update_timeout = var.alb_load_balancer_update_timeout
+  load_balancer_delete_timeout = var.alb_load_balancer_delete_timeout
+  tags                         = local.tags
 }
 
 # module "autoscaling" {
