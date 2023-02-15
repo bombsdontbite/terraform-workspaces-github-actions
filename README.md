@@ -68,7 +68,7 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 | vpc_propagate_private_route_tables_vgw | Should be true if you want route table propagation. | `bool` | `false` | no |
 | vpc_enable_flow_log | Whether or not to enable VPC Flow Logs. | `bool` | `false` | no |
 | vpc_flow_log_destination_type | Type of flow log destination. Can be s3 or cloud-watch-logs. **Please note: Only s3 destination type can be used within this project!**  | `string` | `"s3"` | no |
-| vpc_flow_log_destination_arn | The ARN of S3 bucket where VPC Flow Logs will be pushed. If this ARN is a S3 bucket the appropriate permissions need to be set on that bucket's policy. | `string` | `""` | no |
+| vpc_flow_log_destination_arn | The ARN of S3 bucket where VPC Flow Logs will be pushed. If this ARN is a S3 bucket the appropriate permissions need to be set on that bucket's policy. | `string` | `null` | no |
 | vpc_flow_log_log_format | The fields to include in the flow log record, in the order in which they should appear. | `string` | `null` | no |
 | vpc_flow_log_traffic_type | The type of traffic to capture. Valid values: ACCEPT, REJECT, ALL. | `string` | `"ALL"` | no |
 | flow_log_max_aggregation_interval | The maximum interval of time during which a flow of packets is captured and aggregated into a flow log record. Valid Values: `60` seconds or `600` seconds. | `number` | `600` | no |
