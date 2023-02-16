@@ -32,7 +32,9 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 
 | Secret name | Desctiption | Required |
 |-------------|-------------|----------|
-| SECRET_PHRASE | Secret phrase to demonstrate the usage of environment secrets. | yes |
+| TARGET_ACCOUNT | Target AWS account ID. | yes |
+| TARGET_REGION | Target AWS region name. | yes |
+| TARGET_ROLE | Target AM role to be assumed. | yes |
 
 -----
 
