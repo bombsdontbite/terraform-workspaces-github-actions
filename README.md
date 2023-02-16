@@ -106,7 +106,6 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 | igw_id | The ID of the Internet Gateway. |
 | s3_flow_log_bucket_name | The name of the flow-log bucket. |
 | s3_flow_log_bucket_arn | The ARN of the bucket. Will be of format arn:aws:s3:::bucketname. |
-| http_security_group_id | HTTP security group ID. |
 
 ### EC2 stack outputs
 
