@@ -61,7 +61,7 @@ module "autoscaling" {
   update_default_version          = var.autoscaling_update_default_version
   image_id                        = data.aws_ami.amazon_linux.id
   instance_type                   = var.autoscaling_instance_type
-  user_data                       = base64encode(templatefile("../../templates/user_data.sh.tpl", secret_phrase = "Hello from ${upper(terraform.workspace)} environment!" )
+  user_data                       = base64encode(templatefile("../../templates/user_data.sh.tpl", secret_phrase = "Hello from ${upper(terraform.workspace)} environment!"))
   ebs_optimized                   = var.autoscaling_ebs_optimized
   enable_monitoring               = var.autoscaling_enable_monitoring
   create_iam_instance_profile     = var.autoscaling_create_iam_instance_profile
