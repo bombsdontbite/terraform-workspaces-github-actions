@@ -6,24 +6,36 @@ locals {
 
 # MODULES & RESOURCES
 
-# module "autoscaling_security_group" {
-#   source = "github.com/terraform-aws-modules/terraform-aws-security-group/modules/http-80"
-#   providers = {
-#     aws = aws.target
-#   }
-#   name                = "${terraform.workspace}-${var.project}-http"
-#   use_name_prefix     = false
-#   vpc_id              = module.vpc.vpc_id
-#   computed_ingress_with_source_security_group_id = [
-#     {
-#       rule                     = "http-80-tcp"
-#       source_security_group_id = module.alb_http_sg.security_group_id
-#     }
-#   ]
-#   number_of_computed_ingress_with_source_security_group_id = 1
-#   egress_rules                                             = ["all-all"]
-#   tags                                                     = local.tags
-# }
+module "alb_security_group" {
+  source = "github.com/terraform-aws-modules/terraform-aws-security-group/modules/http-80"
+  providers = {
+    aws = aws.target
+  }
+  name                = "${terraform.workspace}-${var.project}-http"
+  use_name_prefix     = false
+  vpc_id              = module.vpc.vpc_id
+  ingress_cidr_blocks = ["0.0.0.0/0"]
+  tags                = local.tags
+}
+
+module "autoscaling_security_group" {
+  source  = "github.com/terraform-aws-modules/terraform-aws-security-group/"
+  providers = {
+    aws = aws.target
+  }
+  name            = "${terraform.workspace}-${var.project}-autoscaling"
+  use_name_prefix = false
+  vpc_id          = module.vpc.vpc_id
+  computed_ingress_with_source_security_group_id = [
+    {
+      rule                     = "http-80-tcp"
+      source_security_group_id = module.alb_security_group.security_group_id
+    }
+  ]
+  number_of_computed_ingress_with_source_security_group_id = 1
+  egress_rules                                             = ["all-all"]
+  tags                                                     = local.tags
+}
 
 module "alb" {
   source = "github.com/terraform-aws-modules/terraform-aws-alb"
@@ -35,7 +47,7 @@ module "alb" {
   internal                       = var.alb_internal
   vpc_id                         = data.terraform_remote_state.vpc.outputs.vpc_id
   subnets                        = data.terraform_remote_state.vpc.outputs.public_subnets
-  security_groups                = [data.terraform_remote_state.vpc.outputs.http_security_group_id]
+  security_groups                = [module.alb_security_group.security_group_id]
   security_group_use_name_prefix = false
   http_tcp_listeners = [
     {
@@ -90,6 +102,7 @@ module "autoscaling" {
   iam_role_policies = {
     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   }
+  security_groups   = [module.autoscaling_security_group.security_group_id]
   target_group_arns = module.alb.target_group_arns
   block_device_mappings = [
     {
