@@ -11,7 +11,7 @@ module "alb_security_group" {
   providers = {
     aws = aws.target
   }
-  name                = "${terraform.workspace}-${var.project}-http"
+  name                = "${terraform.workspace}-${var.project}-alb"
   use_name_prefix     = false
   vpc_id              = module.vpc.vpc_id
   ingress_cidr_blocks = ["0.0.0.0/0"]
