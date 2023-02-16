@@ -69,13 +69,3 @@ output "s3_flow_log_bucket_arn" {
   description = "The ARN of the bucket. Will be of format arn:aws:s3:::bucketname."
   value       = try(module.s3_flow_log_bucket[0].s3_bucket_arn, "")
 }
-  
-output "http_security_group_id" {
-  description = "HTTP security group ID."
-  value       = module.http_security_group.security_group_id
-}
-  
-output "autoscaling_security_group_id" {
-  description = "HTTP security group ID."
-  value       = module.autoscaling_security_group.security_group_id
-}
