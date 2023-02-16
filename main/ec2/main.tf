@@ -11,12 +11,13 @@ module "alb" {
   providers = {
     aws = aws.target
   }
-  name               = "${terraform.workspace}-${var.project}-lb"
-  load_balancer_type = var.alb_load_balancer_type # Only application loadbalancer type can be used within this project.
-  internal           = var.alb_internal
-  vpc_id             = data.terraform_remote_state.vpc.outputs.vpc_id
-  subnets            = data.terraform_remote_state.vpc.outputs.public_subnets
-  security_groups    = [data.terraform_remote_state.vpc.outputs.http_security_group_id]
+  name                           = "${terraform.workspace}-${var.project}-lb"
+  load_balancer_type             = var.alb_load_balancer_type # Only application loadbalancer type can be used within this project.
+  internal                       = var.alb_internal
+  vpc_id                         = data.terraform_remote_state.vpc.outputs.vpc_id
+  subnets                        = data.terraform_remote_state.vpc.outputs.public_subnets
+  security_groups                = [data.terraform_remote_state.vpc.outputs.http_security_group_id]
+  security_group_use_name_prefix = false
   http_tcp_listeners = [
     {
       port               = 80
