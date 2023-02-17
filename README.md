@@ -69,7 +69,7 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 | vpc_propagate_public_route_tables_vgw | Should be true if you want route table propagation. | `bool` | `false` | no |
 | vpc_propagate_private_route_tables_vgw | Should be true if you want route table propagation. | `bool` | `false` | no |
 | vpc_enable_flow_log | Whether or not to enable VPC Flow Logs. | `bool` | `false` | no |
-| vpc_flow_log_destination_type | Type of flow log destination. Can be s3 or cloud-watch-logs. **Please note: Only s3 destination type can be used within this project!**  | `string` | `"s3"` | no |
+| vpc_flow_log_destination_type | Type of flow log destination. Can be s3 or cloud-watch-logs. **Please note: Only `s3` destination type can be used within this project!**  | `string` | `"s3"` | no |
 | vpc_flow_log_destination_arn | The ARN of S3 bucket where VPC Flow Logs will be pushed. If this ARN is a S3 bucket the appropriate permissions need to be set on that bucket's policy. | `string` | `null` | no |
 | vpc_flow_log_log_format | The fields to include in the flow log record, in the order in which they should appear. | `string` | `null` | no |
 | vpc_flow_log_traffic_type | The type of traffic to capture. Valid values: ACCEPT, REJECT, ALL. | `string` | `"ALL"` | no |
@@ -79,12 +79,28 @@ This project demonstrates the potential of reusable workflows using GitHub Actio
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
-| alb_load_balancer_type | The type of load balancer to create. Possible values are application or network. **Please note: Only application loadbalancer type can be used within this project!** | `string` | `"application"` | no |
+| alb_load_balancer_type | The type of load balancer to create. Possible values are application or network. **Please note: Only `"application"` loadbalancer type can be used within this project!** | `string` | `"application"` | no |
 | alb_internal | Boolean determining if the load balancer is internal or externally facing. | `bool` | `false` | no |
 | alb_idle_timeout | The time in seconds that the connection is allowed to be idle. | `number` | `60` | no |
 | alb_load_balancer_create_timeout | Timeout value when creating the ALB. | `string` | `"10m"` | no |
 | alb_load_balancer_update_timeout | Timeout value when updating the ALB. | `string` | `"10m"` | no |
 | alb_load_balancer_delete_timeout | Timeout value when deleting the ALB. | `string` | `"10m"` | no |
+| autoscaling_key_name | The key name that should be used for the instance. | `string` | `null` | no |
+| autoscaling_ignore_desired_capacity_changes | Determines whether the `desired_capacity` value is ignored after initial apply. | `bool` | `false` | no |
+| autoscaling_min_size | The minimum size of the autoscaling group. | `number` | `null` | no |
+| autoscaling_max_size | The maximum size of the autoscaling group. | `number` | `null` | no |
+| autoscaling_desired_capacity | The number of Amazon EC2 instances that should be running in the autoscaling group. | `number` | `null` | no |
+| autoscaling_wait_for_capacity_timeout | A maximum duration that Terraform should wait for ASG instances to be healthy before timing out. | `string` | `"10m"` | no |
+| autoscaling_default_instance_warmup | Amount of time, in seconds, until a newly launched instance can contribute to the Amazon CloudWatch metrics. This delay lets an instance finish initializing before Amazon EC2 Auto Scaling aggregates instance metrics, resulting in more reliable usage data. Set this value equal to the amount of time that it takes for resource consumption to become stable after an instance reaches the InService state. | `number` | `null` | no |
+| autoscaling_update_default_version | Whether to update Default Version each update. **Please note: Only the `true` value available value within this project!** | `bool` | `true` | no |
+| autoscaling_instance_type | The type of the instance. | `string` | `null` | no |
+| autoscaling_ebs_optimized | If true, the launched EC2 instance will be EBS-optimized. | `bool` | `null` | no |
+| autoscaling_enable_monitoring | Enables/disables detailed monitoring. | `bool` | `true` | no |
+| autoscaling_create_iam_instance_profile | Determines whether an IAM instance profile is created or to use an existing IAM instance profile. **Please note: Only the `true` value available value within this project!** | `bool` | `true` | no |
+| autoscaling_delete_on_termination | Whether the volume should be destroyed on instance termination. | `bool` | `true` | no |
+| autoscaling_encrypted | Enables EBS encryption on the volume. | `bool` | `true` | no |
+| autoscaling_volume_size | The size of the root volume in gigabytes. | `number` | `null` | no |
+| autoscaling_volume_type | The root volume type. | `string` | `null` | no |
 
 -----
 
