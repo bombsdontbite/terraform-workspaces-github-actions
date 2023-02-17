@@ -17,3 +17,14 @@ vpc_enable_nat_gateway = true
 vpc_enable_flow_log    = true
 
 # EC2 STACK VARIABLES
+
+autoscaling_ignore_desired_capacity_changes = true
+autoscaling_min_size                        = 1
+autoscaling_max_size                        = 3
+autoscaling_desired_capacity                = 2
+autoscaling_default_instance_warmup         = 300
+autoscaling_instance_type                   = "t3.small"
+autoscaling_ebs_optimized                   = true
+autoscaling_enable_monitoring               = false
+autoscaling_volume_size                     = 8 
+autoscaling_volume_type                     = "gp2"
