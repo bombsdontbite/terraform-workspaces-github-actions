@@ -78,7 +78,7 @@ jobs:
         TF_VAR_target_region: ${{ secrets.TARGET_REGION }}
         TF_VAR_target_role: ${{ secrets.TARGET_ROLE }}
       run: |
-        terraform workspace select ${{ inputs.input_environment }} || terraform workspace new ${{ inputs.input_environment }}
+        terraform workspace select -or-create ${{ inputs.input_environment }} 
         terraform validate
         if [[ "${{ inputs.input_mode }}" == "destroy" ]]; then
           terraform plan -destroy -var-file="../../inputs/${{ inputs.input_environment }}.tfvars" -out "${{ inputs.input_environment }}.txt"
@@ -88,5 +88,5 @@ jobs:
     - name: Terraform Apply
       if: inputs.input_mode != 'plan'
       run: |
-        terraform workspace select ${{ inputs.input_environment }} || terraform workspace new ${{ inputs.input_environment }}
+        terraform workspace select -or-create ${{ inputs.input_environment }}
         terraform apply -input=false "${{ inputs.input_environment }}.txt"
