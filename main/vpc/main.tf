@@ -46,7 +46,7 @@ module "s3_flow_log_bucket" {
     aws = aws.target
   }
   bucket = "${terraform.workspace}-${var.project}-flow-logs-${data.aws_caller_identity.target.account_id}-${data.aws_region.target.name}"
-  acl    = "log-delivery-write"
+  policy = data.aws_iam_policy_document.flow_log_s3.json
   lifecycle_rule = [
     {
       id      = "default"
