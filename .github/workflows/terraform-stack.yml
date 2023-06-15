@@ -65,11 +65,12 @@ jobs:
         aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
     - name: Install Terraform
       uses: hashicorp/setup-terraform@v2
-    - name: Run TFSEC
-      uses: aquasecurity/tfsec-action@v1.0.2
+    - name: Trivy
+      uses: aquasecurity/trivy-action@master
+      if: inputs.input_mode != 'destroy'
       with:
-        working_directory: ./main/${{ inputs.input_stack }}
-        soft_fail: true
+        scan-ref: ./main/${{ inputs.input_stack }}
+        scan-type: 'config'
     - name: Terraform Init
       run: terraform init 
     - name: Terraform Plan
