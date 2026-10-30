@@ -21,7 +21,7 @@ data "aws_iam_policy_document" "flow_log_s3" {
       identifiers = ["delivery.logs.amazonaws.com"]
     }
     actions   = ["s3:PutObject"]
-    resources = ["arn:aws:s3:::${terraform.workspace}-${var.project}-flow-logs-${data.aws_caller_identity.target.account_id}-${data.aws_region.target.name}/AWSLogs/*"]
+    resources = ["arn:aws:s3:::${terraform.workspace}-${var.project}-flow-logs-${data.aws_caller_identity.target.account_id}-${data.aws_region.target.region}/AWSLogs/*"]
   }
   statement {
     sid = "AWSLogDeliveryAclCheck"
@@ -30,6 +30,6 @@ data "aws_iam_policy_document" "flow_log_s3" {
       identifiers = ["delivery.logs.amazonaws.com"]
     }
     actions   = ["s3:GetBucketAcl"]
-    resources = ["arn:aws:s3:::${terraform.workspace}-${var.project}-flow-logs-${data.aws_caller_identity.target.account_id}-${data.aws_region.target.name}"]
+    resources = ["arn:aws:s3:::${terraform.workspace}-${var.project}-flow-logs-${data.aws_caller_identity.target.account_id}-${data.aws_region.target.region}"]
   }
 }

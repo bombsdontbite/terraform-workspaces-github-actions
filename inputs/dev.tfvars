@@ -25,5 +25,5 @@ autoscaling_default_instance_warmup         = 300
 autoscaling_instance_type                   = "t3.micro"
 autoscaling_ebs_optimized                   = true
 autoscaling_enable_monitoring               = false
-autoscaling_volume_size                     = 8 
+autoscaling_volume_size                     = 8
 autoscaling_volume_type                     = "gp2"
