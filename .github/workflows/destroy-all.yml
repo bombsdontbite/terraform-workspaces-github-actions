@@ -7,26 +7,32 @@ on:
     inputs:
       input_environment:
         description: 'Input environment'
-        required: true 
+        required: true
         type: choice
         options:
         - dev
         - stag
         - prod
 
+permissions: {}
+
 jobs:
   ec2:
-    uses: bombsdontbite/multi-environment-infrastructure-provisioning/.github/workflows/terraform-stack.yml@main
+    uses: ./.github/workflows/terraform-stack.yml
+    permissions:
+      contents: read
+      id-token: write
     with:
       input_environment: ${{ inputs.input_environment }}
       input_stack: ec2
       input_mode: destroy
-    secrets: inherit
   vpc:
-    uses: bombsdontbite/multi-environment-infrastructure-provisioning/.github/workflows/terraform-stack.yml@main
+    needs: ec2
+    uses: ./.github/workflows/terraform-stack.yml
+    permissions:
+      contents: read
+      id-token: write
     with:
       input_environment: ${{ inputs.input_environment }}
       input_stack: vpc
       input_mode: destroy
-    secrets: inherit
-    needs: ec2

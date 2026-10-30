@@ -1,0 +1,63 @@
+name: pull-request
+
+run-name: checks for pull request #${{ github.event.pull_request.number }}
+
+on:
+  pull_request:
+    branches:
+    - main
+
+permissions: {}
+
+# The checks touch no state, so a newer push may cancel an older run.
+concurrency:
+  group: pull-request-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: fmt, validate, trivy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+      with:
+        terraform_version: 1.17.1
+        terraform_wrapper: false
+    - name: Terraform Format
+      run: terraform fmt -check -recursive -diff
+    - name: Terraform Validate
+      run: |
+        for dir in main/vpc main/ec2 bootstrap/management bootstrap/target; do
+          echo "::group::$dir"
+          terraform -chdir="$dir" init -backend=false -input=false
+          terraform -chdir="$dir" validate
+          echo "::endgroup::"
+        done
+    # Runs after init so the downloaded modules are scanned too; prod's inputs switch on the most.
+    - name: Trivy
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      with:
+        scan-type: config
+        scan-ref: .
+        tf-vars: ./inputs/prod.tfvars
+        severity: HIGH,CRITICAL
+        limit-severities-for-sarif: true
+        format: sarif
+        output: trivy-results.sarif
+        exit-code: '1'
+        version: v0.76.1
+    - name: Upload Trivy results to code scanning
+      if: ${{ !cancelled() && hashFiles('trivy-results.sarif') != '' }}
+      uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+      with:
+        sarif_file: trivy-results.sarif
+        category: trivy-config

@@ -7,21 +7,21 @@ on:
     inputs:
       input_environment:
         description: 'Input environment'
-        required: true 
+        required: true
         type: string
       input_stack:
         description: 'Input the Terraform stack'
-        required: true 
+        required: true
         type: string
       input_mode:
-        description: 'Whether to deploy or destroy the infrastructure'
-        required: true 
+        description: 'Whether to plan, deploy or destroy the infrastructure'
+        required: true
         type: string
   workflow_dispatch:
     inputs:
       input_environment:
         description: 'Input environment'
-        required: true 
+        required: true
         type: choice
         options:
         - dev
@@ -29,14 +29,14 @@ on:
         - prod
       input_stack:
         description: 'Input the Terraform stack'
-        required: true 
+        required: true
         type: choice
         options:
         - vpc
         - ec2
       input_mode:
-        description: 'Whether to deploy or destroy the infrastructure'
-        required: true 
+        description: 'Whether to plan, deploy or destroy the infrastructure'
+        required: true
         type: choice
         default: plan
         options:
@@ -44,50 +44,163 @@ on:
         - apply
         - destroy
 
+# Nothing by default; each job asks for what it needs.
+permissions: {}
+
+# One run per environment and stack. Never cancel a running one: an apply stopped halfway
+# leaves a lock and a partly changed environment behind.
+concurrency:
+  group: terraform-${{ inputs.input_environment }}-${{ inputs.input_stack }}
+  cancel-in-progress: false
+
+env:
+  TF_IN_AUTOMATION: 'true'
+  TF_INPUT: 'false'
+  TF_ENVIRONMENT: ${{ inputs.input_environment }}
+  TF_STACK: ${{ inputs.input_stack }}
+  TF_MODE: ${{ inputs.input_mode }}
+
 jobs:
-  terraform:
-    name: ${{ inputs.input_stack }}
-    runs-on: ubuntu-latest
+  plan:
+    name: plan ${{ inputs.input_stack }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     environment: ${{ inputs.input_environment }}
-    concurrency: ${{ inputs.input_environment }}-${{ inputs.input_stack }}-terraform-stack
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      changes: ${{ steps.plan.outputs.changes }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./main/${{ inputs.input_stack }}
+    env:
+      TF_VAR_target_account: ${{ vars.TARGET_ACCOUNT }}
+      TF_VAR_target_region: ${{ vars.TARGET_REGION }}
+      TF_VAR_target_role: ${{ vars.TARGET_ROLE }}
+    steps:
+    - name: Check inputs
+      working-directory: .
+      run: |
+        [[ "$TF_ENVIRONMENT" =~ ^(dev|stag|prod)$ ]] || { echo "::error::unknown environment: $TF_ENVIRONMENT"; exit 1; }
+        [[ "$TF_STACK" =~ ^(vpc|ec2)$ ]] || { echo "::error::unknown stack: $TF_STACK"; exit 1; }
+        [[ "$TF_MODE" =~ ^(plan|apply|destroy)$ ]] || { echo "::error::unknown mode: $TF_MODE"; exit 1; }
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+      with:
+        role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+        role-session-name: gha-${{ inputs.input_environment }}-${{ inputs.input_stack }}-${{ github.run_id }}
+        role-duration-seconds: 3600
+        aws-region: ${{ vars.AWS_REGION }}
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+      with:
+        terraform_version: 1.17.1
+        terraform_wrapper: false
+    - name: Terraform Init
+      run: terraform init
+    - name: Trivy
+      if: inputs.input_mode != 'destroy'
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      with:
+        scan-type: config
+        scan-ref: ./main/${{ inputs.input_stack }}
+        tf-vars: ./inputs/${{ inputs.input_environment }}.tfvars
+        severity: HIGH,CRITICAL
+        exit-code: '1'
+        version: v0.76.1
+    - name: Terraform Workspace
+      run: terraform workspace select -or-create "$TF_ENVIRONMENT"
+    - name: Terraform Validate
+      run: terraform validate
+    - name: Terraform Plan
+      id: plan
+      run: |
+        args=(-var-file="../../inputs/${TF_ENVIRONMENT}.tfvars" -out=tfplan -lock-timeout=5m -detailed-exitcode)
+        if [[ "$TF_MODE" == "destroy" ]]; then
+          args+=(-destroy)
+        fi
+        set +e
+        terraform plan "${args[@]}"
+        code=$?
+        set -e
+        case "$code" in
+          0) echo "changes=false" >> "$GITHUB_OUTPUT" ;;
+          2) echo "changes=true" >> "$GITHUB_OUTPUT" ;;
+          *) exit "$code" ;;
+        esac
+    - name: Plan summary
+      run: |
+        {
+          echo "### ${TF_MODE} ${TF_STACK} on ${TF_ENVIRONMENT}"
+          echo
+          terraform show -no-color tfplan | grep -E '^(Plan:|No changes\.)' || true
+          echo
+          echo '<details><summary>Full plan</summary>'
+          echo
+          echo '```'
+          terraform show -no-color tfplan | head -c 900000
+          echo '```'
+          echo '</details>'
+        } >> "$GITHUB_STEP_SUMMARY"
+    # A plan file holds every input value in plain text, sensitive ones included, and anyone who
+    # can read the repository can download its artifacts. Keep secrets out of variables, or encrypt
+    # the file before uploading it.
+    - name: Upload plan
+      if: inputs.input_mode != 'plan' && steps.plan.outputs.changes == 'true'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: tfplan-${{ inputs.input_environment }}-${{ inputs.input_stack }}
+        path: main/${{ inputs.input_stack }}/tfplan
+        if-no-files-found: error
+        retention-days: 1
+
+  apply:
+    name: ${{ inputs.input_mode }} ${{ inputs.input_stack }}
+    needs: plan
+    if: inputs.input_mode != 'plan' && needs.plan.outputs.changes == 'true'
+    runs-on: ubuntu-24.04
+    # The chained target-account session ends with the OIDC session, after an hour.
+    timeout-minutes: 55
+    environment: ${{ inputs.input_environment }}
+    permissions:
+      contents: read
+      id-token: write
     defaults:
       run:
         shell: bash
         working-directory: ./main/${{ inputs.input_stack }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+        persist-credentials: false
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+      with:
+        role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+        role-session-name: gha-${{ inputs.input_environment }}-${{ inputs.input_stack }}-${{ github.run_id }}
+        role-duration-seconds: 3600
+        aws-region: ${{ vars.AWS_REGION }}
     - name: Install Terraform
-      uses: hashicorp/setup-terraform@v2
-    - name: Trivy
-      uses: aquasecurity/trivy-action@master
-      if: inputs.input_mode != 'destroy'
+      uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
       with:
-        scan-ref: ./main/${{ inputs.input_stack }}
-        scan-type: 'config'
+        terraform_version: 1.17.1
+        terraform_wrapper: false
+    - name: Download plan
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        name: tfplan-${{ inputs.input_environment }}-${{ inputs.input_stack }}
+        path: main/${{ inputs.input_stack }}
     - name: Terraform Init
-      run: terraform init 
-    - name: Terraform Plan
-      env:
-        TF_VAR_target_account: ${{ secrets.TARGET_ACCOUNT }}
-        TF_VAR_target_region: ${{ secrets.TARGET_REGION }}
-        TF_VAR_target_role: ${{ secrets.TARGET_ROLE }}
-      run: |
-        terraform workspace select -or-create ${{ inputs.input_environment }} 
-        terraform validate
-        if [[ "${{ inputs.input_mode }}" == "destroy" ]]; then
-          terraform plan -destroy -var-file="../../inputs/${{ inputs.input_environment }}.tfvars" -out "${{ inputs.input_environment }}.txt"
-        else
-          terraform plan -var-file="../../inputs/${{ inputs.input_environment }}.tfvars" -out "${{ inputs.input_environment }}.txt"
-        fi
+      run: terraform init
+    - name: Terraform Workspace
+      run: terraform workspace select "$TF_ENVIRONMENT"
+    # Applies exactly what the plan job showed; Terraform refuses the file if the state moved since.
     - name: Terraform Apply
-      if: inputs.input_mode != 'plan'
-      run: |
-        terraform workspace select -or-create ${{ inputs.input_environment }}
-        terraform apply -input=false "${{ inputs.input_environment }}.txt"
+      run: terraform apply -lock-timeout=5m tfplan

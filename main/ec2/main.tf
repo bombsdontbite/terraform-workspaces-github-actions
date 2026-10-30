@@ -2,77 +2,113 @@
 
 locals {
   tags = merge(var.tags, { "Project" = var.project, "Environment" = terraform.workspace })
+  vpc  = data.terraform_remote_state.vpc.outputs
 }
 
 # MODULES & RESOURCES
 
 module "alb_security_group" {
-  source = "github.com/terraform-aws-modules/terraform-aws-security-group/modules/http-80"
+  source  = "terraform-aws-modules/security-group/aws//modules/http-80"
+  version = "6.0.0"
   providers = {
     aws = aws.target
   }
-  name                = "${terraform.workspace}-${var.project}-alb"
-  use_name_prefix     = false
-  vpc_id              = data.terraform_remote_state.vpc.outputs.vpc_id
-  ingress_cidr_blocks = ["0.0.0.0/0"]
-  tags                = local.tags
+  name            = "${terraform.workspace}-${var.project}-alb"
+  use_name_prefix = false
+  vpc_id          = local.vpc.vpc_id
+  ingress_cidr_ipv4 = {
+    internet = "0.0.0.0/0"
+  }
+  # Security group module v6 no longer adds an implicit allow-all egress rule.
+  egress_rules = {
+    http-to-vpc = {
+      description = "HTTP to the targets and their health checks"
+      from_port   = 80
+      ip_protocol = "tcp"
+      cidr_ipv4   = local.vpc.vpc_cidr_block
+    }
+  }
+  tags = local.tags
 }
 
+# Package repositories and SSM have no fixed addresses: egress is HTTPS only, through the NAT gateway.
+#trivy:ignore:AWS-0104
 module "autoscaling_security_group" {
-  source  = "github.com/terraform-aws-modules/terraform-aws-security-group/"
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "6.0.0"
   providers = {
     aws = aws.target
   }
   name            = "${terraform.workspace}-${var.project}-autoscaling"
   use_name_prefix = false
-  vpc_id          = data.terraform_remote_state.vpc.outputs.vpc_id
-  computed_ingress_with_source_security_group_id = [
-    {
-      rule                     = "http-80-tcp"
-      source_security_group_id = module.alb_security_group.security_group_id
+  vpc_id          = local.vpc.vpc_id
+  ingress_rules = {
+    http-from-alb = {
+      description                  = "HTTP from the load balancer"
+      from_port                    = 80
+      ip_protocol                  = "tcp"
+      referenced_security_group_id = module.alb_security_group.id
     }
-  ]
-  number_of_computed_ingress_with_source_security_group_id = 1
-  egress_rules                                             = ["all-all"]
-  tags                                                     = local.tags
+  }
+  egress_rules = {
+    https = {
+      description = "Package updates and SSM through the NAT gateway"
+      from_port   = 443
+      ip_protocol = "tcp"
+      cidr_ipv4   = "0.0.0.0/0"
+    }
+  }
+  tags = local.tags
 }
 
+# A public HTTP endpoint is the demo; HTTPS needs a domain and an ACM certificate.
+#trivy:ignore:AWS-0053
+#trivy:ignore:AWS-0054
 module "alb" {
-  source = "github.com/terraform-aws-modules/terraform-aws-alb"
+  source  = "terraform-aws-modules/alb/aws"
+  version = "10.5.1"
   providers = {
     aws = aws.target
   }
-  name                           = "${terraform.workspace}-${var.project}-lb"
-  load_balancer_type             = var.alb_load_balancer_type # Only application loadbalancer type can be used within this project.
-  internal                       = var.alb_internal
-  vpc_id                         = data.terraform_remote_state.vpc.outputs.vpc_id
-  subnets                        = data.terraform_remote_state.vpc.outputs.public_subnets
-  security_groups                = [module.alb_security_group.security_group_id]
-  create_security_group          = false
-  http_tcp_listeners = [
-    {
-      port               = 80
-      protocol           = "HTTP"
-      target_group_index = 0
+  name                       = "${terraform.workspace}-${var.project}-lb"
+  load_balancer_type         = var.alb_load_balancer_type # Only application loadbalancer type can be used within this project.
+  internal                   = var.alb_internal
+  vpc_id                     = local.vpc.vpc_id
+  subnets                    = local.vpc.public_subnets
+  security_groups            = [module.alb_security_group.id]
+  create_security_group      = false
+  enable_deletion_protection = var.alb_enable_deletion_protection
+  listeners = {
+    http = {
+      port     = 80
+      protocol = "HTTP"
+      forward = {
+        target_group_key = "web"
+      }
     }
-  ]
-  target_groups = [
-    {
-      name             = "${terraform.workspace}-${var.project}-tg"
-      backend_protocol = "HTTP"
-      backend_port     = 80
-      target_type      = "instance"
+  }
+  target_groups = {
+    web = {
+      name        = "${terraform.workspace}-${var.project}-tg"
+      protocol    = "HTTP"
+      port        = 80
+      target_type = "instance"
+      # The autoscaling group registers its instances.
+      create_attachment = false
     }
-  ]
-  idle_timeout                 = var.alb_idle_timeout
-  load_balancer_create_timeout = var.alb_load_balancer_create_timeout
-  load_balancer_update_timeout = var.alb_load_balancer_update_timeout
-  load_balancer_delete_timeout = var.alb_load_balancer_delete_timeout
-  tags                         = local.tags
+  }
+  idle_timeout = var.alb_idle_timeout
+  timeouts = {
+    create = var.alb_load_balancer_create_timeout
+    update = var.alb_load_balancer_update_timeout
+    delete = var.alb_load_balancer_delete_timeout
+  }
+  tags = local.tags
 }
 
 module "autoscaling" {
-  source = "github.com/terraform-aws-modules/terraform-aws-autoscaling"
+  source  = "terraform-aws-modules/autoscaling/aws"
+  version = "9.3.2"
   providers = {
     aws = aws.target
   }
@@ -87,13 +123,13 @@ module "autoscaling" {
   wait_for_capacity_timeout       = var.autoscaling_wait_for_capacity_timeout
   default_instance_warmup         = var.autoscaling_default_instance_warmup
   health_check_type               = "EC2"
-  vpc_zone_identifier             = data.terraform_remote_state.vpc.outputs.private_subnets
+  vpc_zone_identifier             = local.vpc.private_subnets
   service_linked_role_arn         = aws_iam_service_linked_role.this.arn
   launch_template_name            = "${terraform.workspace}-${var.project}-launch-template"
   update_default_version          = var.autoscaling_update_default_version
   image_id                        = data.aws_ami.amazon_linux.id
   instance_type                   = var.autoscaling_instance_type
-  user_data                       = base64encode(templatefile("../../templates/user_data.sh.tpl", { secret_phrase = "Hello from ${upper(terraform.workspace)} environment!" }))
+  user_data                       = base64encode(templatefile("${path.module}/../../templates/user_data.sh.tpl", { secret_phrase = "Hello from ${upper(terraform.workspace)} environment!" }))
   ebs_optimized                   = var.autoscaling_ebs_optimized
   enable_monitoring               = var.autoscaling_enable_monitoring
   create_iam_instance_profile     = var.autoscaling_create_iam_instance_profile
@@ -102,8 +138,12 @@ module "autoscaling" {
   iam_role_policies = {
     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   }
-  security_groups   = [module.autoscaling_security_group.security_group_id]
-  target_group_arns = module.alb.target_group_arns
+  security_groups = [module.autoscaling_security_group.id]
+  traffic_source_attachments = {
+    alb = {
+      traffic_source_identifier = module.alb.target_groups["web"].arn
+    }
+  }
   block_device_mappings = [
     {
       # Root volume only
@@ -125,18 +165,17 @@ module "autoscaling" {
         predefined_metric_specification = {
           predefined_metric_type = "ASGAverageCPUUtilization"
         }
-        target_value       = 70.0
-        scale_in_cooldown  = 300
-        scale_out_cooldown = 300
+        target_value = 70.0
       }
     }
   }
   tags = local.tags
 }
-  
+
 # SUPPORTING RESOURCES
-  
+
 resource "aws_iam_service_linked_role" "this" {
+  provider         = aws.target
   aws_service_name = "autoscaling.amazonaws.com"
   description      = "A service linked role for autoscaling."
   custom_suffix    = "${terraform.workspace}-${var.project}"

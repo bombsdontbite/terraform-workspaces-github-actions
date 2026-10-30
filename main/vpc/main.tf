@@ -7,7 +7,8 @@ locals {
 # MODULES & RESOURCES
 
 module "vpc" {
-  source = "github.com/terraform-aws-modules/terraform-aws-vpc"
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "6.7.3"
   providers = {
     aws = aws.target
   }
@@ -38,15 +39,19 @@ module "vpc" {
 # If VPC flow logs are enabled and the destination type is `s3`
 # but no destination ARN has been specified,
 # an S3 bucket will be created automatically and set as the flow log bucket for the VPC.
-  
+
+# Default SSE-S3 encryption; a customer managed key would need its own key policy for log delivery.
+#trivy:ignore:AWS-0132
 module "s3_flow_log_bucket" {
-  count  = var.vpc_enable_flow_log && var.vpc_flow_log_destination_type == "s3" && var.vpc_flow_log_destination_arn == null ? 1 : 0 
-  source = "github.com/terraform-aws-modules/terraform-aws-s3-bucket"
+  count   = var.vpc_enable_flow_log && var.vpc_flow_log_destination_type == "s3" && var.vpc_flow_log_destination_arn == null ? 1 : 0
+  source  = "terraform-aws-modules/s3-bucket/aws"
+  version = "5.17.0"
   providers = {
     aws = aws.target
   }
-  bucket = "${terraform.workspace}-${var.project}-flow-logs-${data.aws_caller_identity.target.account_id}-${data.aws_region.target.name}"
-  policy = data.aws_iam_policy_document.flow_log_s3.json
+  bucket        = "${terraform.workspace}-${var.project}-flow-logs-${data.aws_caller_identity.target.account_id}-${data.aws_region.target.region}"
+  attach_policy = true # Without it the module ignores `policy`.
+  policy        = data.aws_iam_policy_document.flow_log_s3.json
   lifecycle_rule = [
     {
       id      = "default"
