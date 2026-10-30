@@ -25,5 +25,9 @@ override.tf.json
 #
 # !example_override.tf
 
-# Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
-# example: *tfplan*
+# Plan files (terraform plan -out=tfplan): binary, and they can hold secrets in plain text
+tfplan
+*.tfplan
+
+# Bootstrap inputs: account IDs, copied from terraform.tfvars.example
+terraform.tfvars

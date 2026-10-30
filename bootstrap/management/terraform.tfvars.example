@@ -1,0 +1,7 @@
+# Copy to terraform.tfvars and put in your account IDs.
+# One account per environment is what keeps them apart; see README, "Workspaces and credentials".
+environments = {
+  dev  = { target_account_id = "111111111111" }
+  stag = { target_account_id = "222222222222" }
+  prod = { target_account_id = "333333333333" }
+}

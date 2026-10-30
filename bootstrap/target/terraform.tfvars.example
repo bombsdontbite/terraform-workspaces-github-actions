@@ -1,0 +1,4 @@
+# Copy to terraform.tfvars. List every environment that deploys into this account.
+management_role_arns = [
+  "arn:aws:iam::000000000000:role/github-terraform-dev",
+]
