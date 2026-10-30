@@ -1,6 +1,6 @@
 name: pull-request
 
-run-name: checks and dev plan for pull request #${{ github.event.pull_request.number }}
+run-name: checks for pull request #${{ github.event.pull_request.number }}
 
 on:
   pull_request:
@@ -9,10 +9,10 @@ on:
 
 permissions: {}
 
-# Never cancel: a plan stopped halfway can leave its state lock behind.
+# The checks touch no state, so a newer push may cancel an older run.
 concurrency:
   group: pull-request-${{ github.event.pull_request.number }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   checks:
@@ -61,28 +61,3 @@ jobs:
       with:
         sarif_file: trivy-results.sarif
         category: trivy-config
-
-  # A pull request from a fork gets no OIDC token, so it stops at the checks above.
-  vpc:
-    name: dev vpc
-    needs: checks
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    uses: ./.github/workflows/terraform-stack.yml
-    permissions:
-      contents: read
-      id-token: write
-    with:
-      input_environment: dev
-      input_stack: vpc
-      input_mode: plan
-  ec2:
-    name: dev ec2
-    needs: vpc
-    uses: ./.github/workflows/terraform-stack.yml
-    permissions:
-      contents: read
-      id-token: write
-    with:
-      input_environment: dev
-      input_stack: ec2
-      input_mode: plan

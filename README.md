@@ -21,7 +21,7 @@ terraform workspace <env> ──────┘
 - **Two stacks**, `main/vpc` and `main/ec2`, built from [terraform-aws-modules](https://github.com/terraform-aws-modules). The EC2 stack reads the VPC stack's outputs with `terraform_remote_state` and `workspace = terraform.workspace`, so `dev` reads `dev`.
 - **One workspace per environment.** The S3 backend keeps each workspace's state at `workspaces/<env>/<stack>/terraform.tfstate` and locks it with a `.tflock` object beside it (`use_lockfile`, no DynamoDB).
 - **Two providers.** The default `aws` provider is the management account, where the state lives; the workflow reaches it through GitHub OIDC. The `target` alias assumes a role in the environment's own account (role chaining), and every resource uses it.
-- **One reusable workflow**, `terraform-stack.yml`, takes an environment, a stack and a mode (`plan`, `apply`, `destroy`). `apply-all.yml` and `destroy-all.yml` call it for both stacks in order, and `pull-request.yml` calls it to plan `dev`.
+- **One reusable workflow**, `terraform-stack.yml`, takes an environment, a stack and a mode (`plan`, `apply`, `destroy`). `apply-all.yml` and `destroy-all.yml` call it for both stacks in order. `pull-request.yml` only runs checks and never touches AWS.
 
 -----
 
@@ -68,15 +68,15 @@ Protection rules:
 
 | Environment | Required reviewers | Deployment branches |
 |-------------|--------------------|---------------------|
-| `dev` | none | all branches, so pull requests can plan |
+| `dev` | yes | all branches, for manual runs from a feature branch |
 | `stag` | yes | `main` only |
 | `prod` | yes, and prevent self-review | `main` only |
 
-The plan and the apply are separate jobs and both run in the environment, so in `stag` and `prod` a reviewer approves twice: once to let the plan run, then again after reading it in the run's summary. Because `dev` accepts any branch, anyone who can push a branch can use the `dev` role from it; keep `dev` a sandbox in its own account.
+The plan and the apply are separate jobs and both run in the environment, so in every environment a reviewer approves twice: once to let the plan run, then again after reading it in the run's summary. Because `dev` accepts any branch, anyone who can push a branch can use the `dev` role from it; keep `dev` a sandbox in its own account.
 
 ### 4. First run
 
-Run **apply-all** for `dev` once. A pull request plans the EC2 stack against the VPC stack's applied state, so that state has to exist first.
+Run **apply-all** for `dev` once to check the whole setup end to end. The EC2 stack reads the VPC stack's applied state, so `apply-all` applies `vpc` first.
 
 -----
 
@@ -84,7 +84,7 @@ Run **apply-all** for `dev` once. A pull request plans the EC2 stack against the
 
 | Workflow | Trigger | What it does |
 |----------|---------|--------------|
-| `pull-request` | pull request to `main` | `terraform fmt -check`, `init -backend=false` and `validate` for every root module, Trivy (fails on HIGH/CRITICAL, results in *Security → Code scanning*), then plans `vpc` and `ec2` in `dev` and prints the plans to the run summary. Pull requests from forks get no OIDC token and stop after the checks. |
+| `pull-request` | pull request to `main` | `terraform fmt -check`, `init -backend=false` and `validate` for every root module, Trivy (fails on HIGH/CRITICAL, results in *Security → Code scanning*). It needs no AWS access. |
 | `terraform-stack` | manual, or called | Plans one stack in one environment; in `apply` or `destroy` mode a second job applies that exact plan. |
 | `apply-all` | manual | `vpc`, then `ec2`. |
 | `destroy-all` | manual | `ec2`, then `vpc`. |
@@ -122,7 +122,7 @@ What stays shared: one bucket and one backend configuration, bucket listing (key
 | Actions by tag or `@master`, `owner/repo@main` | Actions by commit SHA, reusable workflow by local path | Tags can be moved (trivy-action's were, in March 2026); a local path runs the commit being tested. |
 | Default token permissions | `permissions: {}` and per-job grants | Least privilege. |
 | Plan and apply in one job, plan named `<env>.txt` | Plan job → `tfplan` artifact → apply job | The apply runs exactly what was shown. |
-| No pull-request checks | fmt, validate, Trivy with SARIF, `dev` plan | Problems surface before merge. |
+| No pull-request checks | fmt, validate, Trivy with SARIF | Problems surface before merge. |
 
 Pinned versions: Terraform 1.17.1, AWS provider 6.71.0; modules vpc 6.7.3, s3-bucket 5.17.0, security-group 6.0.0, alb 10.5.1, autoscaling 9.3.2; actions checkout v7.0.1, configure-aws-credentials v6.3.0, setup-terraform v4.0.1, trivy-action v0.36.0 (Trivy v0.76.1), upload-artifact v7.0.2, download-artifact v8.0.2, codeql-action v4.39.1.
 
