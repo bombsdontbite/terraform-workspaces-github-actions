@@ -47,6 +47,12 @@ variable "alb_internal" {
   default     = false
 }
 
+variable "alb_enable_deletion_protection" {
+  description = "Whether deletion of the load balancer is disabled. The ALB module defaults to true since v9; false keeps destroy-all working."
+  type        = bool
+  default     = false
+}
+
 variable "alb_idle_timeout" {
   description = "The time in seconds that the connection is allowed to be idle."
   type        = number

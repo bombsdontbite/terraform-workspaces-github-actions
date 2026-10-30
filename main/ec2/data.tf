@@ -11,12 +11,17 @@ data "terraform_remote_state" "vpc" {
   }
 }
 
+# Amazon Linux 2 reached end of support on 2026-06-30; Amazon Linux 2023 replaces it.
 data "aws_ami" "amazon_linux" {
   provider    = aws.target
   most_recent = true
   owners      = ["amazon"]
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm*"]
+    values = ["al2023-ami-2023.*-x86_64"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
   }
 }
